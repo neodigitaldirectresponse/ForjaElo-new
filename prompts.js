@@ -12,3 +12,8 @@ const prompts = [
     text: `{USER_NAME}=Nome do usuário\n{USER_TRAITS}=Lista de traços ou qualidades positivas do usuário\n{USER_GOALS}=Principais objetivos ou aspirações do usuário\n\nCom base nas informações do usuário, resuma os principais traços e objetivos.\nDiante dos seguintes detalhes sobre [USER_NAME]—traços positivos: [USER_TRAITS]; objetivos principais: [USER_GOALS]—crie um breve resumo que servirá de contexto para gerar afirmações\n\n ~ Crie afirmações focadas em aumentar a autoconfiança, a motivação e o senso de valor pessoal com base nas qualidades e metas do usuário.\n"Usando esse contexto: [SUMMARY_FROM_STEP_1], gere [AFFIRMATION_COUNT] afirmações que incentivem a crença em si mesmo e ações positivas. Garanta que cada afirmação reflita um dos traços ou objetivos do usuário e seja direta e motivadora."\n\n~ Melhore cada afirmação adicionando linguagem emocionalmente forte para torná-la impactante e fácil de internalizar.\n"Para cada afirmação em [AFFIRMATIONS_FROM_STEP_2], aperfeiçoe-a com palavras encorajadoras e deixe-a concisa. Certifique-se de que esteja no tempo presente, de modo que o usuário se sinta estimulado no momento."\n\n~ Revise e ajuste as afirmações para garantir que sejam motivadoras e alinhadas à jornada pessoal de [USER_NAME].\n"Revise a lista de afirmações e faça quaisquer ajustes finais para garantir que soem naturais, positivas e diretamente relacionadas ao crescimento e às metas pessoais de [USER_NAME].`
   }
 ];
+
+// Expose prompts for popup consumption
+if (typeof window !== 'undefined') {
+  window.FORJA_PROMPTS = prompts;
+}

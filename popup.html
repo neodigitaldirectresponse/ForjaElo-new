@@ -2,289 +2,142 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=500, initial-scale=1">
-<title>ForjaElo Digital • Hub SSA 6.7 (Somente Online)</title>
+<meta name="viewport" content="width=400, initial-scale=1">
+<title>Forja Elo — SSA</title>
 <style>
-  :root{
-    --primary:#2563eb;--primary-hover:#1d4ed8;--bg:#fff;--text:#1a1a1a;--muted:#64748b;--surface:#f3f4f6;--radius:10px;--gap:1rem;--line:#e5e7eb
-  }
-  [data-theme="dark"]{--bg:#0f172a;--text:#e2e8f0;--muted:#94a3b8;--surface:#111827;--primary:#3b82f6;--primary-hover:#2563eb;--line:#374151}
-  *{box-sizing:border-box}html,body{height:100%}
-  body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;display:flex;justify-content:center;align-items:flex-start;padding:var(--gap)}
-  a{color:var(--primary)}
-  main{width:100%;max-width:500px;min-width:300px;max-height:1000px;min-height:560px;overflow:auto;display:flex;flex-direction:column;gap:var(--gap)}
-  header{display:flex;justify-content:space-between;align-items:center}
-  h1{font-size:1.15rem;margin:0}
-  small, label{color:var(--muted)}
-  fieldset{border:1px solid var(--line);border-radius:var(--radius);padding:var(--gap)}
-  legend{padding:0 .5em;font-weight:700}
-  input,select,textarea,button{width:100%;font-size:.9rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);padding:.6em}
-  textarea{min-height:90px;resize:vertical}
-  button{background:var(--primary);color:#fff;border:none;cursor:pointer}
-  button:hover{background:var(--primary-hover)}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
-  .muted{color:var(--muted);font-size:.8rem}
-  .badge{display:inline-block;padding:.2em .5em;border-radius:6px;background:var(--surface);border:1px solid var(--line);font-size:.7rem}
-  .kpi{display:flex;gap:.5rem;flex-wrap:wrap}
-  .kpi div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:.6rem .7rem;min-width:105px;text-align:center}
-  .pill{display:inline-flex;gap:.35rem;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.25rem .55rem;font-size:.75rem}
-  .list{display:flex;flex-direction:column;gap:.5rem}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  .nowrap{white-space:nowrap;overflow:auto}
+:root{
+  --primary:#2563eb;
+  --primary-hover:#1d4ed8;
+  --bg:#fff;
+  --text:#1a1a1a;
+  --muted:#64748b;
+  --surface:#f3f4f6;
+  --line:#e5e7eb;
+  --radius:10px;
+  --gap:1rem;
+}
+[data-theme="dark"]{
+  --bg:#0f172a;
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --surface:#111827;
+  --primary:#3b82f6;
+  --primary-hover:#2563eb;
+  --line:#374151;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif;}
+main{display:flex;flex-direction:column;gap:var(--gap);padding:var(--gap);min-width:320px;}
+header{display:flex;align-items:center;justify-content:space-between;}
+h1{font-size:1rem;margin:0;}
+button,input,select,textarea{font-size:.9rem;padding:.5rem;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);}
+button{background:var(--primary);color:#fff;border:none;cursor:pointer;}
+button:hover{background:var(--primary-hover);}
+textarea{width:100%;min-height:80px;}
+fieldset{border:1px solid var(--line);border-radius:var(--radius);padding:var(--gap);}
+legend{padding:0 .5rem;font-weight:700;}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;}
+#queueList{max-height:100px;overflow:auto;padding:0;margin:.5rem 0;list-style:decimal inside;}
+#loadingOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.2);display:none;align-items:center;justify-content:center;z-index:999;}
+#loadingOverlay.is-active{display:flex;}
+#shortcutsTable table{width:100%;border-collapse:collapse;}
+#shortcutsTable td{padding:.25rem;}
 </style>
 </head>
 <body data-theme="light">
 <main>
   <header>
-    <h1>ForjaElo Digital • Hub SSA 6.7</h1>
-    <div style="display:flex;gap:.5rem">
-      <button id="theme">🌙 Tema</button>
-      <button id="reset">↺ Limpar</button>
+    <h1>Forja Elo — SSA</h1>
+    <div class="row" style="gap:.25rem">
+      <button id="toggleTheme">🌙</button>
+      <button id="openChatGPT">ChatGPT</button>
+      <button id="openShortcuts">Atalhos</button>
     </div>
   </header>
 
-  <p class="muted">
-    Modo <b>somente online</b>. Provas usam <span class="badge">SDE — Selo Digital de Espelho</span>
-    (hash + carimbo de data). Use SSA 6.7 apenas para <b>formatar</b> o que você fornecer.
-  </p>
-
-  <!-- 1) Funil Dinâmico (S–S–S–V) -->
   <fieldset>
-    <legend>Funil Dinâmico (S–S–S–V) • Gerador de Copy</legend>
+    <legend>Modos Forja</legend>
     <div class="row">
-      <div>
-        <label>Silêncio (perguntas)</label>
-        <textarea id="fd_s" placeholder="Ex.: O que já tentou? Onde trava hoje?"></textarea>
-      </div>
-      <div>
-        <label>Semelhança (caso próximo)</label>
-        <textarea id="fd_se" placeholder="Ex.: Pessoas como você em [bairro] resolveram [dor] com [passo]."></textarea>
-      </div>
+      <select id="toolSelect">
+        <option value="SSA">SSA</option>
+        <option value="Scorecard">Scorecard</option>
+        <option value="Devocional">Devocional</option>
+        <option value="Processo7">Processo 7 passos</option>
+        <option value="RoteiroIde90s">Roteiro Ide 90s</option>
+        <option value="Detox24h">Detox 24h</option>
+      </select>
+      <button id="applyTool">Aplicar</button>
     </div>
-    <div class="row">
-      <div>
-        <label>Segurança (piloto online)</label>
-        <textarea id="fd_seg" placeholder="Ex.: Convite para call de 12 min / sessão de 30 min / sandbox gravado."></textarea>
-      </div>
-      <div>
-        <label>Verdade (limites/critério)</label>
-        <textarea id="fd_v" placeholder="Ex.: Não prometemos X; elegível se tiver Y e Z."></textarea>
-      </div>
-    </div>
-    <label>CTA (próximo passo online)</label>
-    <input id="fd_cta" placeholder="Ex.: Agende sua call / Entre no grupo fechado / Gere seu acesso">
-    <button id="fd_build">Gerar Copy</button>
-    <textarea id="fd_out" class="mono" readonly placeholder="Copy combinada aqui…"></textarea>
-    <small class="muted">Dica: troque a ordem livremente (dinâmica). Sempre feche com um próximo passo.</small>
   </fieldset>
 
-  <!-- 2) SDE — Selo Digital de Espelho -->
   <fieldset>
-    <legend>SDE — Selo Digital de Espelho (hash + timestamp)</legend>
+    <legend>Prompts Forja</legend>
     <div class="row">
-      <div>
-        <label>Título/Assunto</label>
-        <input id="sde_title" placeholder="Ex.: Caso Talentos — ajuste de preço">
-      </div>
-      <div>
-        <label>Data (BRT)</label>
-        <input id="sde_date" type="datetime-local">
-      </div>
+      <select id="promptSelect"></select>
+      <button id="copyPrompt">Copiar Prompt</button>
     </div>
-    <label>Resumo factual (3–5 linhas, sem dados sensíveis)</label>
-    <textarea id="sde_body" placeholder="Ex.: Resultado digital comprovável, métricas, contexto, links públicos."></textarea>
-    <div class="row">
-      <div>
-        <label>URLs auxiliares (se houver)</label>
-        <textarea id="sde_urls" placeholder="Uma por linha (planilha, página espelho, vídeo)"></textarea>
-      </div>
-      <div>
-        <label>Endossos digitais (ex.: e-mail público, post concorrente)</label>
-        <textarea id="sde_endorse" placeholder="Uma por linha (prints/anexos linkáveis)"></textarea>
-      </div>
-    </div>
-    <button id="sde_gen">Gerar SDE</button>
-    <div class="list">
-      <div class="pill"><span>📄</span><code id="sde_id" class="mono nowrap">SDE-</code></div>
-      <textarea id="sde_json" class="mono" readonly placeholder="Bundle JSON com carimbo de data e SHA-256…"></textarea>
-      <button id="sde_copy">Copiar JSON do SDE</button>
-    </div>
-    <small class="muted">O SDE é rastreável (hash). Não substitui validações físicas; serve ao marketing “espelho” e auditoria digital.</small>
   </fieldset>
 
-  <!-- 3) Claim Log (governança de promessas) -->
   <fieldset>
-    <legend>Claim Log (registro de promessas online)</legend>
-    <label>Claim (afirmação objetiva)</label>
-    <input id="cl_claim" placeholder="Ex.: Ajuste de preço com planilha em 30 min (sem promessa de faturamento).">
+    <legend>Fila</legend>
+    <textarea id="bulkQueueInput" placeholder="Texto ~ Outro texto"></textarea>
     <div class="row">
-      <div><label>Canal</label><select id="cl_channel">
-        <option>Instagram</option><option>WhatsApp</option><option>YouTube</option>
-        <option>Landing</option><option>E-mail</option><option>Ads</option></select></div>
-      <div><label>ID SDE (opcional)</label><input id="cl_sde" placeholder="Cole o SDE gerado (SDE-YYYYMMDD-…)"></div>
+      <button id="queueButton">Enfileirar</button>
+      <button id="clearQueue">Limpar</button>
+      <span>Fila: <span id="queueCount">0</span></span>
     </div>
-    <div class="row">
-      <div><label>Status</label><select id="cl_status"><option>Aprovado</option><option>Pendente</option><option>Arquivado</option></select></div>
-      <div><label>UTM (referência)</label><input id="cl_utm" placeholder="utm_source=…&utm_medium=…"></div>
-    </div>
-    <button id="cl_add">Adicionar</button>
-    <textarea id="cl_list" class="mono" readonly placeholder="Itens registrados aparecerão aqui em JSON…"></textarea>
-    <div class="row"><button id="cl_copy">Copiar JSON</button><button id="cl_clear">Limpar</button></div>
-    <small class="muted">Bloqueie publicações sem SDE quando a peça invocar “prova”.</small>
+    <ul id="queueList"></ul>
   </fieldset>
 
-  <!-- 4) ICx — painel de métricas digitais -->
   <fieldset>
-    <legend>ICx (Inteligência de Conexão) • Métricas Digitais</legend>
+    <legend>Ações Rápidas</legend>
     <div class="row">
-      <div><label>Contatos totais</label><input id="i_tot" type="number" min="0" value="0"></div>
-      <div><label>Próximo passo aceito</label><input id="i_np" type="number" min="0" value="0"></div>
+      <button id="pasteStart">Colar & Iniciar</button>
+      <button id="startAutomation">Iniciar Automação</button>
+      <button id="copyResult">Copiar Resultado</button>
     </div>
-    <div class="row">
-      <div><label>Clareza (problema 1 frase)</label><input id="i_clr" type="number" min="0" value="0"></div>
-      <div><label>Conversões (pilotos online)</label><input id="i_cnv" type="number" min="0" value="0"></div>
-    </div>
-    <div class="row">
-      <div><label>Retornos em 30 dias</label><input id="i_ctd" type="number" min="0" value="0"></div>
-      <div><label>Custo cognitivo (min/decisão)</label><input id="i_ccg" type="number" min="0" value="0"></div>
-    </div>
-    <button id="i_calc">Calcular</button>
-    <div class="kpi" id="i_out"></div>
-    <small class="muted">KPIs: Cnf%=NP/TOT • Clr%=CLR/TOT • Cnv%=CNV/TOT • Ctd%=CTD/TOT • Ccg=min • Prv=SDE/mês.</small>
   </fieldset>
 
-  <!-- 5) UTM Builder -->
   <fieldset>
-    <legend>Construtor UTM</legend>
+    <legend>Notas / Exportação</legend>
+    <textarea id="note" placeholder="Suas notas..."></textarea>
     <div class="row">
-      <div><label>URL base</label><input id="u_base" placeholder="https://seudominio.com/pagina"></div>
-      <div><label>utm_source</label><input id="u_src" placeholder="instagram"></div>
+      <button id="save">Salvar</button>
+      <button id="load">Carregar</button>
+      <button id="exportJson">Exportar JSON</button>
+      <button id="exportLogs">Exportar Logs</button>
+      <button id="resetChat">Resetar Chat</button>
     </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Resultado</legend>
+    <textarea id="lastResponse" readonly></textarea>
+    <div id="status"></div>
+    <div id="serviceStatus" class="muted"></div>
+  </fieldset>
+
+  <fieldset id="shortcutsTable" style="display:none">
+    <legend>Atalhos</legend>
+    <table>
+      <tr><td>Aplicar Ferramenta</td><td><input id="scApplyTool"></td></tr>
+      <tr><td>Colar & Iniciar</td><td><input id="scPasteStart"></td></tr>
+      <tr><td>Enfileirar</td><td><input id="scQueue"></td></tr>
+      <tr><td>Limpar Fila</td><td><input id="scClearQueue"></td></tr>
+      <tr><td>Copiar Prompt</td><td><input id="scCopyPrompt"></td></tr>
+      <tr><td>Copiar Resultado</td><td><input id="scCopyResult"></td></tr>
+    </table>
     <div class="row">
-      <div><label>utm_medium</label><input id="u_med" placeholder="paid|organic|dm"></div>
-      <div><label>utm_campaign</label><input id="u_cmp" placeholder="forjaelo_lancamento"></div>
+      <button id="saveShortcuts">Salvar</button>
+      <button id="resetShortcuts">Restaurar</button>
     </div>
-    <label>utm_content (opcional)</label>
-    <input id="u_cnt" placeholder="carrossel_sde_0123">
-    <button id="u_build">Gerar URL</button>
-    <input id="u_out" class="mono" readonly placeholder="URL final com UTMs…">
   </fieldset>
-
-  <!-- 6) Biblioteca de Copys (modelos rápidos) -->
-  <fieldset>
-    <legend>Copys Rápidas (Semelhança • Segurança • Verdade • CTA)</legend>
-    <div class="list">
-      <div class="pill">Semelhança</div>
-      <textarea id="lib_se" readonly class="mono">“Gente como você, em [bairro], travava em [dor] e avançou com um passo mínimo.”</textarea>
-      <div class="pill">Segurança</div>
-      <textarea id="lib_seg" readonly class="mono">“Vamos testar em 12–30 min (online). Processo claro, sem prometer milagres.”</textarea>
-      <div class="pill">Verdade</div>
-      <textarea id="lib_v" readonly class="mono">“Não fazemos [X]; critérios: [Y,Z]. Se não encaixar, paramos sem custo.”</textarea>
-      <div class="pill">CTA</div>
-      <textarea id="lib_cta" readonly class="mono">“Agende sua sessão agora (link)”</textarea>
-    </div>
-    <button id="lib_copy">Copiar conjunto</button>
-  </fieldset>
-
-  <!-- 7) SSA 6.7 — comandos prontos -->
-  <fieldset>
-    <legend>Comandos SSA 6.7 (apenas formatação)</legend>
-    <textarea id="ssa_cmd" class="mono" readonly>
-SSA, organize as MINHAS notas abaixo em 4 blocos (Silêncio, Semelhança, Segurança, Verdade) e gere 1 copy com CTA. Não invente nada. Texto: ‹colar minhas notas›.
-
-SSA, formate a página “espelho digital” do SDE ‹cole o JSON› em 5 linhas (Fato, Resultado, Hash abreviado, Timestamp, Próximo passo).
-
-SSA, consolide minhas métricas ICx (totais, NP, CLR, CNV, CTD, CCG) e devolva os percentuais.
-    </textarea>
-    <button id="ssa_copy">Copiar comandos SSA</button>
-  </fieldset>
-
-  <p class="muted">Mantra Digital: <b>“Prova rastreável (SDE). Copy honesta. Próximo passo online. FORJA.”</b></p>
 </main>
 
-<script>
-  // Tema
-  const $=sel=>document.querySelector(sel);
-  $('#theme').onclick=()=>{document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark'}
+<div id="loadingOverlay"><span>Carregando…</span></div>
 
-  // Reset
-  $('#reset').onclick=()=>{document.querySelectorAll('input,textarea').forEach(e=>{if(!e.readOnly)e.value=''});$('#i_out').innerHTML='';$('#sde_id').textContent='SDE-';}
-
-  // Funil Dinâmico
-  $('#fd_build').onclick=()=>{
-    const s=$('#fd_s').value.trim(), se=$('#fd_se').value.trim(), seg=$('#fd_seg').value.trim(), v=$('#fd_v').value.trim(), cta=$('#fd_cta').value.trim();
-    const blocks=[se, s, seg, v].filter(Boolean); // ordem inicial Semelhança → Silêncio → Segurança → Verdade
-    const out = [blocks.join(' '), (cta?(' '+cta):'')].join('');
-    $('#fd_out').value = out || 'Preencha pelo menos um bloco.';
-  }
-
-  // SDE — Selo Digital de Espelho
-  function toHex(buf){return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')}
-  async function sha256(txt){const enc=new TextEncoder().encode(txt);const buf=await crypto.subtle.digest('SHA-256',enc);return toHex(buf)}
-  $('#sde_gen').onclick=async()=>{
-    const nowLocal = ($('#sde_date').value || new Date().toISOString());
-    const payload = {
-      type:"SDE",
-      title: $('#sde_title').value.trim(),
-      timestamp: nowLocal,
-      timezone: "America/Sao_Paulo",
-      summary: $('#sde_body').value.trim(),
-      urls: ($('#sde_urls').value.trim().split('\n').filter(x=>x)),
-      endorsements: ($('#sde_endorse').value.trim().split('\n').filter(x=>x))
-    };
-    const json = JSON.stringify(payload);
-    const hash = await sha256(json);
-    const id = `SDE-${nowLocal.replace(/[:T\-\.Z]/g,'').slice(0,12)}-${hash.slice(0,8)}`;
-    $('#sde_id').textContent=id;
-    $('#sde_json').value=JSON.stringify({...payload, sha256:hash, id}, null, 2);
-  }
-  $('#sde_copy').onclick=()=>{navigator.clipboard.writeText($('#sde_json').value||'');}
-
-  // Claim Log
-  const claims=[];
-  function renderClaims(){ $('#cl_list').value=JSON.stringify(claims,null,2); }
-  $('#cl_add').onclick=()=>{
-    const item={
-      ts:new Date().toISOString(),
-      claim:$('#cl_claim').value.trim(),
-      channel:$('#cl_channel').value,
-      sde:$('#cl_sde').value.trim(),
-      status:$('#cl_status').value,
-      utm:$('#cl_utm').value.trim()
-    };
-    claims.push(item); renderClaims();
-  }
-  $('#cl_copy').onclick=()=>navigator.clipboard.writeText($('#cl_list').value||'');
-  $('#cl_clear').onclick=()=>{claims.length=0;renderClaims();}
-
-  // ICx
-  $('#i_calc').onclick=()=>{
-    const tot=+$('#i_tot').value||0, np=+$('#i_np').value||0, clr=+$('#i_clr').value||0, cnv=+$('#i_cnv').value||0, ctd=+$('#i_ctd').value||0, ccg=+$('#i_ccg').value||0;
-    const pct=(n)=>tot?((n/tot*100).toFixed(1)+'%'):'0.0%';
-    const html = `
-      <div><b>Cnf</b><div>${pct(np)}</div></div>
-      <div><b>Clr</b><div>${pct(clr)}</div></div>
-      <div><b>Cnv</b><div>${pct(cnv)}</div></div>
-      <div><b>Ctd</b><div>${pct(ctd)}</div></div>
-      <div><b>Ccg</b><div>${ccg} min</div></div>
-      <div><b>Prv</b><div>${(claims.filter(c=>c.sde).length)} SDE</div></div>
-    `;
-    $('#i_out').innerHTML=html;
-  }
-
-  // UTM
-  function buildUTM(base,params){const q=new URLSearchParams(params);return `${base}${base.includes('?')?'&':'?'}${q.toString()}`}
-  $('#u_build').onclick=()=>{
-    const base=$('#u_base').value.trim(); if(!base){$('#u_out').value='Informe a URL base.';return}
-    const url=buildUTM(base,{utm_source:$('#u_src').value.trim(),utm_medium:$('#u_med').value.trim(),utm_campaign:$('#u_cmp').value.trim(),utm_content:$('#u_cnt').value.trim()||undefined});
-    $('#u_out').value=url;
-  }
-
-  // Biblioteca / SSA copy
-  $('#lib_copy').onclick=()=>{navigator.clipboard.writeText(
-    `Semelhança: ${$('#lib_se').value}\nSegurança: ${$('#lib_seg').value}\nVerdade: ${$('#lib_v').value}\nCTA: ${$('#lib_cta').value}`
-  )}
-  $('#ssa_copy').onclick=()=>{navigator.clipboard.writeText($('#ssa_cmd').value)}
-</script>
+<script src="prompts.js"></script>
+<script src="popup.js"></script>
 </body>
 </html>
+
