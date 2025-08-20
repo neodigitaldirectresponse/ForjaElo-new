@@ -7,13 +7,17 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node test/run-tests.js"
+    "test": "playwright test",
+    "test:smoke": "playwright test tests/smoke.spec.ts",
+    "test:unit": "node test/run-tests.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "jsdom": "^26.1.0"
+    "@playwright/test": "^1.55.0",
+    "jsdom": "^26.1.0",
+    "playwright": "^1.55.0"
   }
 }
