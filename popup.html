@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <!-- A largura fixa evita zoom indesejado em popups de extensao -->
+  <meta name="viewport" content="width=500, initial-scale=1">
+  <title>Agente Autônomo Local</title>
+
+  <!-- Variáveis e Reset -->
+  <style>
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-bg: #fff;
+      --color-text: #1a1a1a;
+      --color-muted: #64748b;
+      --color-surface: #f3f4f6;
+      --radius: 8px;
+      --gap: 1rem;
+      --transition: 0.3s ease;
+    }
+    [data-theme="dark"] {
+      --color-bg: #1a1a1a;
+      --color-text: #e5e5e5;
+      --color-muted: #a0aec0;
+      --color-surface: #2d3748;
+      --color-primary: #3b82f6;
+      --color-primary-hover: #2563eb;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.5;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: var(--gap);
+    }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Container principal */
+    main {
+      /* largura ideal entre 300 e 500px */
+      width: 100%;
+      min-width: 300px;
+      max-width: 500px;
+      max-height: 800px;
+      min-height: 500px;
+      overflow-y: auto;
+      overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+    }
+    header {
+      text-align: center;
+      margin-bottom: var(--gap);
+    }
+    h1, h2 {
+      margin-bottom: 0.5em;
+    }
+
+    /* Forms e botões */
+    label {
+      display: block;
+      margin-bottom: 0.25em;
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      font-weight: 500;
+    }
+    input, select, textarea, button {
+      font-size: 0.875rem;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      padding: 0.5em;
+      width: 100%;
+      background: var(--color-bg);
+      color: var(--color-text);
+      transition: border-color var(--transition);
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--color-primary);
+      color: #fff;
+      border: none;
+      margin-top: 0.5em;
+      transition: background-color var(--transition);
+    }
+    button:hover, button:focus {
+      background-color: var(--color-primary-hover);
+    }
+
+    /* Collapsible styles removed: sections are always visible */
+
+    /* Spinner/Overlay */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #999;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.25em;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loadingOverlay {
+      display: none;
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.5rem;
+      pointer-events: none;
+      z-index: 2000;
+    }
+    #loadingOverlay.is-active { display: flex; }
+    .overlay-content {
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      padding: 0.5em 1em;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    /* Tabelas de atalhos */
+    table {
+      width: 100%;
+      font-size: 0.75rem;
+      border-collapse: collapse;
+      margin-bottom: var(--gap);
+    }
+    th, td {
+      padding: 0.5em;
+      text-align: left;
+    }
+    #builtinShortcuts th {
+      border-bottom: 1px solid #ccc;
+    }
+
+    /* Fieldsets para grupos */
+    fieldset {
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      padding: var(--gap);
+      margin-bottom: var(--gap);
+    }
+    legend {
+      padding: 0 0.5em;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    /* Responsividade */
+    @media (max-width: 480px) {
+      body { padding: 0.5rem; }
+      main {
+        width: 100%;
+        max-height: 100%;
+      }
+    }
+
+    /* Ajuste para displays de alta densidade */
+    @media (min-resolution: 2dppx) {
+      main { max-width: 500px; }
+    }
+  </style>
+</head>
+
+<body data-theme="light">
+  <main>
+    <header>
+      <h1>Fila do ChatGPT</h1>
+      <button id="toggleTheme" aria-label="Alternar tema">🌙</button>
+      <button id="openChatGPT">Abrir ChatGPT</button>
+    </header>
+    <p style="font-size:0.85rem; margin-bottom:0.5em;">
+      Configure os atalhos globais em
+      <a id="openShortcuts" href="#">chrome://extensions/shortcuts</a>.<br>
+      Ativos: Abrir ChatGPT rapidamente (Ctrl+Shift+1), Aplicar e Automatizar (Ctrl+Shift+2),
+      Colar texto e iniciar automação (Ctrl+Shift+3), Copiar JSON do resultado (Ctrl+Shift+4).<br>
+      O atalho "Aplicar e Automatizar" detecta a ferramenta nas cinco primeiras palavras copiadas,
+      cola o texto, inicia a automação e copia o resultado automaticamente.
+    </p>
+
+    <!-- Ferramenta e Modo -->
+    <fieldset>
+      <legend>Ferramenta &amp; Modo</legend>
+      <label for="toolSelect">Ferramenta (/)</label>
+      <select id="toolSelect">
+        <option value="">Nenhuma</option>
+        <option>Criar imagem</option>
+        <option>Pensar por mais tempo</option>
+        <option>Investigar</option>
+        <option>Busca na Web</option>
+        <option>Lousa</option>
+      </select>
+      <button id="applyTool">Aplicar Ferramenta</button>
+
+      <label for="selectionModel">Modo de seleção</label>
+      <select id="selectionModel">
+        <option value="keyboard">Teclado</option>
+        <option value="click">Clique</option>
+      </select>
+
+      <label for="operationMode">Modo de operação</label>
+      <select id="operationMode">
+        <option value="cli">CLI</option>
+        <option value="manual">Manual</option>
+      </select>
+    </fieldset>
+
+    <!-- Teclado Simulado -->
+    <h2>Simulação de Teclado</h2>
+    <div id="typingOptions">
+      <p style="font-size:0.75rem; margin-bottom:0.5em;">
+        Modos simulados reproduzem atrasos e pequenas falhas para maior realismo.
+      </p>
+      <label for="typingMode">Modo de digitação</label>
+      <select id="typingMode">
+        <option value="instant">Instantâneo</option>
+        <option value="simulate">Comum</option>
+        <option value="hybrid">Híbrida</option>
+        <option value="robust">Robusta</option>
+        <option value="imitator">Imitador</option>
+        <option value="rewrite">Apagar/Reescrever</option>
+        <option value="rewriteRandom">Reescrever Aleatório</option>
+        <option value="templateFast">Template Rápido</option>
+        <option value="templateSlow">Template Lento</option>
+      </select>
+      <button id="openTestPage">Abrir Página de Teste</button>
+    </div>
+
+    <!-- API AdsPower -->
+    <fieldset>
+      <legend>Integração</legend>
+      <label for="adsPowerApi">URL da API AdsPower</label>
+      <input id="adsPowerApi" placeholder="http://local.adspower.net:50325" type="url">
+    </fieldset>
+
+    <!-- Prompts em Lote -->
+    <h2>Adicionar prompts em lote</h2>
+    <div id="bulkInput">
+      <textarea id="bulkQueueInput" placeholder="Ex: prompt1~prompt2~prompt3" rows="4"></textarea>
+      <small style="display:block; margin-bottom:0.5em;">Separe vários prompts com “~”.</small>
+      <button id="queueButton">Enfileirar Prompts</button>
+    </div>
+
+    <!-- Atrasos -->
+    <h2>Configurações de Atraso</h2>
+    <div id="delaySettings">
+      <label for="promptDelay">Atraso fixo (s)</label>
+      <input id="promptDelay" type="number" min="0" max="300" value="0">
+      <label for="promptDelayMin">Atraso aleatório – mínimo (s)</label>
+      <input id="promptDelayMin" type="number" min="0" max="300" value="1">
+      <label for="promptDelayMax">Atraso aleatório – máximo (s)</label>
+      <input id="promptDelayMax" type="number" min="0" max="600" value="3">
+    </div>
+
+    <!-- Exemplos de PromptChains -->
+    <fieldset>
+      <legend>Exemplos de PromptChains</legend>
+      <label for="promptSelect">Escolha um exemplo</label>
+      <select id="promptSelect"></select>
+      <button id="copyPrompt">Copiar Prompt</button>
+    </fieldset>
+
+    <!-- Mensagens Enfileiradas -->
+    <h2>Mensagens Enfileiradas (<span id="queueCount">0</span>)</h2>
+    <div id="queueContainer">
+      <ul id="queueList" style="list-style:none; padding-left:0;"></ul>
+      <button id="clearQueue">Limpar Fila</button>
+    </div>
+
+    <!-- Notas e Ações -->
+    <fieldset>
+      <legend>Notas &amp; Ações</legend>
+      <textarea id="note" placeholder="Escreva sua nota aqui..." rows="4"></textarea>
+      <div style="display:flex; gap:0.5em; flex-wrap:wrap;">
+        <button id="save">Salvar Nota</button>
+        <button id="load">Carregar Nota</button>
+        <button id="exportJson">Exportar JSON</button>
+        <button id="exportLogs">Exportar Logs</button>
+        <button id="resetChat">Resetar Chat</button>
+      </div>
+    </fieldset>
+
+    <!-- Último Resultado -->
+    <fieldset>
+      <legend>Último Resultado</legend>
+      <textarea id="lastResponse" readonly rows="3"></textarea>
+      <div style="margin-top:0.5em; display:flex; gap:0.5em; flex-wrap:wrap;">
+        <button id="copyResult">Copiar Resultado</button>
+        <div id="status" style="color:green;"></div>
+      </div>
+      <div id="serviceStatus" style="font-size:0.75rem; color:#555;"></div>
+    </fieldset>
+
+    <!-- Ações de Automação -->
+    <fieldset>
+      <legend>Ações de Automação</legend>
+      <div style="display:flex; gap:0.5em; flex-wrap:wrap;">
+        <button id="pasteStart">Colar &amp; Iniciar</button>
+        <button id="startAutomation">Iniciar Automação</button>
+        <button id="demoError">Exemplo Erro</button>
+      </div>
+    </fieldset>
+
+    <!-- Cliques Personalizados -->
+    <h2>Cliques Personalizados</h2>
+    <div id="clicksContainer">
+      <button id="startSelect">Selecionar Elementos</button>
+      <ul id="clickList" style="list-style:none; padding-left:1em; margin:0.5em 0;"></ul>
+      <div style="display:flex; gap:0.5em; flex-wrap:wrap;">
+        <button id="runClicks">Executar Cliques</button>
+        <button id="clearClicks">Limpar</button>
+      </div>
+    </div>
+
+    <!-- Atalhos de Teclado -->
+    <h2>Atalhos de Teclado</h2>
+    <div id="shortcutsContainer">
+      <p style="font-size:0.75rem; margin-bottom:0.5em;">
+        Os atalhos a seguir já existem no ChatGPT. Evite usá‑los novamente.
+      </p>
+      <table id="builtinShortcuts">
+        <thead>
+          <tr><th>Ação</th><th>Windows/Linux</th><th>macOS</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Buscar em chats</td><td>Ctrl+K</td><td>⌘+K</td></tr>
+          <tr><td>Abrir novo chat</td><td>Ctrl+Shift+O</td><td>⌘+Shift+O</td></tr>
+          <tr><td>Alternar barra lateral</td><td>Ctrl+Shift+S</td><td>⌘+Shift+S</td></tr>
+          <tr><td>Copiar último bloco</td><td>Ctrl+Shift+;</td><td>⌘+Shift+;</td></tr>
+          <tr><td>Excluir chat</td><td>Ctrl+Shift+Backspace</td><td>⌘+Shift+Delete</td></tr>
+          <tr><td>Focar entrada</td><td>Shift+Esc</td><td>Shift+Esc</td></tr>
+          <tr><td>Mostrar atalhos</td><td>Ctrl+/</td><td>⌘+/</td></tr>
+          <tr><td>Definir instruções</td><td>Ctrl+Shift+I</td><td>⌘+Shift+I</td></tr>
+        </tbody>
+      </table>
+      <table id="shortcutsTable">
+        <tr><td>Enfileirar</td><td><input id="scQueue" placeholder="Ctrl+Enter"></td></tr>
+        <tr><td>Limpar Fila</td><td><input id="scClearQueue" placeholder="Ctrl+Shift+C"></td></tr>
+        <tr><td>Copiar Prompt</td><td><input id="scCopyPrompt" placeholder="Ctrl+Shift+P"></td></tr>
+        <tr><td>Aplicar Ferramenta</td><td><input id="scApplyTool" placeholder="Ctrl+Shift+2"></td></tr>
+        <tr><td colspan="2"><small>Identifica a ferramenta se as cinco primeiras palavras copiadas contiverem suas palavras-chave.</small></td></tr>
+        <tr><td>Salvar Nota</td><td><input id="scSaveNote" placeholder="Ctrl+S"></td></tr>
+        <tr><td>Carregar Nota</td><td><input id="scLoadNote" placeholder="Ctrl+O"></td></tr>
+        <tr><td>Exportar JSON</td><td><input id="scExportJson" placeholder="Ctrl+Shift+J"></td></tr>
+        <tr><td>Exportar Logs</td><td><input id="scExportLogs" placeholder="Ctrl+Shift+L"></td></tr>
+        <tr><td>Resetar Chat</td><td><input id="scResetChat" placeholder="Ctrl+Shift+X"></td></tr>
+        <tr><td>Selecionar Elementos</td><td><input id="scSelect" placeholder="Ctrl+Shift+S"></td></tr>
+        <tr><td>Executar Cliques</td><td><input id="scRun" placeholder="Ctrl+Shift+R"></td></tr>
+        <tr><td>Limpar Cliques</td><td><input id="scClearClicks" placeholder="Ctrl+Shift+D"></td></tr>
+        <tr><td>Colar &amp; Iniciar</td><td><input id="scPasteStart" placeholder="Ctrl+Shift+V"></td></tr>
+        <tr><td>Iniciar Automação</td><td><input id="scStartAutomation" placeholder="Ctrl+Shift+G"></td></tr>
+        <tr><td>Copiar Resultado</td><td><input id="scCopyResult" placeholder="Ctrl+Shift+B"></td></tr>
+        <tr><td>Exemplo Erro</td><td><input id="scDemoError" placeholder="Ctrl+Shift+M"></td></tr>
+      </table>
+      <div style="display:flex; gap:0.5em;">
+        <button id="saveShortcuts">Salvar Atalhos</button>
+        <button id="resetShortcuts">Restaurar Padrões</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Loading overlay for background operations -->
+  <div id="loadingOverlay">
+    <div class="overlay-content">
+      <span class="spinner"></span>
+      <span>Carregando...</span>
+    </div>
+  </div>
+
+  <!-- Scripts (defer para performance) -->
+  <script src="prompts.js" defer></script>
+  <script src="popup.js" defer></script>
+</body>
+</html>

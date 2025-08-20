@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Apagar/Reescrever - Teste de Simulação</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    textarea.log { width: 100%; height: 150px; margin-top: 20px; font-family: monospace; white-space: pre; }
+    #output, #isoOutput {
+      border: 1px solid #ccc;
+      min-height: 100px;
+      padding: 10px;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .options > div,
+    .options > label,
+    .options > select,
+    .options input,
+    .options button,
+    .options textarea {
+      margin: 5px 0;
+      text-align: center;
+    }
+    /* Estilos específicos para o formulário isolado */
+    .isolate textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    .isolate label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    .isolate button {
+      padding: 8px 16px;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    #isoSpeedVal {
+      font-weight: bold;
+    }
+    #isoOutput {
+      min-height: 80px;
+      padding: 8px;
+    }
+    .mode-desc {
+      font-size: 0.85em;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Apagar/Reescrever - Teste de Simulação</h1>
+  <p>Escolha um cenário ou digite seu próprio texto abaixo para ver a digitação
+    simulada. Ajuste os controles para testar diferentes modos e velocidades.</p>
+  <form id="isoRewriteForm" class="options isolate">
+    <label for="scenario">Cenário:</label>
+    <select id="scenario">
+      <option value="tech">Texto técnico</option>
+      <option value="chat">Conversa informal</option>
+      <option value="code">Código</option>
+      <option value="poem">Poema</option>
+      <option value="lorem">Lorem ipsum</option>
+    </select>
+  <fieldset>
+    <legend>Gerenciamento</legend>
+    <div>
+      <label>Velocidade: <span id="speedVal">120</span> ms</label>
+      <input type="range" id="speed" min="40" max="300" value="120">
+    </div>
+    <div>
+      <label>Erro (%): <span id="errorVal">3</span></label>
+      <input type="range" id="error" min="0" max="10" value="3">
+    </div>
+    <div>
+      <label>Pausa extra: <span id="pauseVal">0</span> ms</label>
+      <input type="range" id="pause" min="0" max="1000" value="0">
+    </div>
+    <div>
+      <label>Variação aleatória: <span id="jitterVal">40</span> ms</label>
+      <input type="range" id="jitter" min="0" max="100" value="40">
+    </div>
+    <div>
+      <label>Palavras erradas: <span id="mistakeVal">2</span></label>
+      <input type="range" id="mistakes" min="0" max="5" value="2">
+    </div>
+    <div>
+      <label>Reescrever palavras: <span id="rewriteVal">0</span></label>
+      <input type="range" id="rewrites" min="0" max="5" value="0">
+    </div>
+    <div>
+      <label>Reescrever ao final: <span id="rewriteEndVal">0</span></label>
+      <input type="range" id="rewriteEnd" min="0" max="10" value="0">
+    </div>
+    <div>
+      <label>Reescrever aleatório: <span id="rewriteRandVal">0</span></label>
+      <input type="range" id="rewriteRand" min="0" max="10" value="0">
+    </div>
+    <div>
+      <label>Prefixo híbrido: <span id="prefixVal">10</span> caracteres</label>
+      <input type="range" id="prefixLen" min="0" max="20" value="10">
+    </div>
+  </fieldset>
+  <div>
+    <label for="mode">Modo:</label>
+    <select id="mode">
+      <option value="padrao">Padrão</option>
+      <option value="instantaneo">Instantâneo</option>
+      <option value="comum">Comum</option>
+      <option value="hibrida">Híbrida</option>
+      <option value="robusta">Robusta</option>
+      <option value="imitador">Imitador</option>
+      <option value="apagarReescrever">Apagar/Reescrever</option>
+      <option value="rewriteRandom">Reescrever Aleatório</option>
+      <option value="template">Template 70 ms</option>
+      <option value="templateFast">Template Rápido 50 ms</option>
+      <option value="templateSlow">Template Lento 150 ms</option>
+    </select>
+  </div>
+  <div id="modeInfo">
+    <p id="modeDesc" class="mode-desc"></p>
+    <button id="saveMode" type="button">Salvar Configuração do Modo</button>
+  </div>
+  <div>
+    <label for="customText">Texto personalizado:</label>
+    <textarea id="customText" rows="4" style="width:100%;"></textarea>
+  </div>
+  <div>
+    <label for="repeat">Repetições:</label>
+    <input type="number" id="repeat" min="1" max="100" value="1" style="width:60px;">
+  </div>
+  <div>
+    <button id="record" type="button">Gravar Amostra</button>
+    <span id="sampleInfo"></span>
+  </div>
+  <button id="run" type="button">Iniciar</button>
+  <button id="clear" type="button">Limpar Saída</button>
+  <button id="saveLog" type="button">Salvar Log</button>
+  <h2 style="margin-top:30px">Teste de Apagar Texto</h2>
+  <div class="delete-options">
+    <label>Velocidade de apagar: <span id="delSpeedVal">120</span> ms</label>
+    <input type="range" id="delSpeed" min="40" max="300" value="120">
+    <button id="deleteBtn" type="button">Apagar</button>
+  </div>
+  <label for="isoText">Texto</label>
+  <textarea id="isoText" rows="3" placeholder="Digite seu texto aqui"></textarea>
+  <label for="isoSpeed">Velocidade: <span id="isoSpeedVal">120</span> ms</label>
+  <input type="range" id="isoSpeed" min="40" max="300" value="120">
+  <button type="submit">Executar</button>
+  </form>
+  <div id="output" contenteditable></div>
+  <textarea id="log" class="log" readonly></textarea>
+
+  <div id="isoOutput" contenteditable="true"></div>
+  <textarea id="isoLog" class="log" readonly></textarea>
+  <script src="base.js"></script>
+  <script src="typing.js"></script>
+  <script src="instantaneo/simulador.js"></script>
+  <script src="comum/simulador.js"></script>
+  <script src="hibrida/simulador.js"></script>
+  <script src="robusta/simulador.js"></script>
+  <script src="apagar-reescrever/simulador.js"></script>
+  <script src="teste-simulacao.js"></script>
+</body>
+</html>

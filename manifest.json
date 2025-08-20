@@ -1,0 +1,71 @@
+{
+  "manifest_version": 3,
+  "name": "Agente Autônomo Local",
+  "version": "8.6",
+  "description": "Cópia local do Agente Autônomo sem chamadas de API",
+  "action": {
+    "default_icon": "icon-34.png",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "simulation/base.js",
+        "simulation/tool.js",
+        "simulation/typing.js",
+        "content.js"
+      ],
+      "matches": [
+        "https://chat.openai.com/*",
+        "https://openai.com/*",
+        "*://*.openai.com/*",
+        "*://*.chatgpt.com/*"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["activeTab", "storage", "tabs", "notifications", "clipboardRead", "clipboardWrite"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "icons": {
+    "128": "icon-128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icon-128.png",
+        "icon-34.png",
+        "simulation/base.js",
+        "simulation/tool.js",
+        "simulation/typing.js",
+        "simulation/comum/simulador.js",
+        "simulation/hibrida/simulador.js",
+        "simulation/instantaneo/simulador.js",
+        "simulation/robusta/simulador.js",
+        "simulation/teste-simulacao.html",
+        "simulation/teste-simulacao.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "commands": {
+    "open-chatgpt": {
+      "suggested_key": { "default": "Ctrl+Shift+1" },
+      "description": "Abrir ChatGPT via redirect"
+    },
+    "apply-tool": {
+      "suggested_key": { "default": "Ctrl+Shift+2" },
+      "description": "Colar texto, iniciar automação e copiar resultado"
+    },
+    "paste-automation": {
+      "suggested_key": { "default": "Ctrl+Shift+3" },
+      "description": "Colar texto e iniciar automação"
+    },
+    "copy-json-result": {
+      "suggested_key": { "default": "Ctrl+Shift+4" },
+      "description": "Copiar JSON do resultado"
+    }
+  }
+}
